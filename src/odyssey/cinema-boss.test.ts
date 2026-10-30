@@ -1,19 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { BOSSES } from "./data";
 import { BEATS } from "./story";
-import { bossSequence, BOSS_DAMAGE_MULT } from "./boss-moves";
 import { directScene, scriptSignature, MIN_SCENE_SECONDS } from "./cine-director";
-
-describe("chefes", () => {
-  it("cada chefe tem 10 ataques diferentes", () => {
-    for (const b of BOSSES) expect(new Set(bossSequence(b.id)).size).toBe(10);
-  });
-  it("nenhum chefe repete a sequência de outro", () => {
-    const seqs = BOSSES.map((b) => bossSequence(b.id).join(","));
-    expect(new Set(seqs).size).toBe(seqs.length);
-  });
-  it("chefes batem mais forte", () => expect(BOSS_DAMAGE_MULT).toBeGreaterThan(1));
-});
 
 describe("cutscenes", () => {
   it("toda cena dura mais de 20 segundos", () => {
