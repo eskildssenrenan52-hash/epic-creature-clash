@@ -68,7 +68,7 @@ function rng(seed: number) { let a = seed >>> 0; return () => { a = (a + 0x6d2b7
 const cache = new WeakMap<DungeonFloor, DepthProp[]>();
 const used = new WeakMap<DungeonFloor, Set<string>>();
 
-const prefixOf = (g: Game) => g.depth!.kind === 'abyss' ? `abyss${g.depth!.floor}` : g.depth!.temple!.id;
+const prefixOf = (g: Game) => g.depth!.kind === 'abyss' ? `abyss${g.depth!.floor}` : g.depth!.temple?.id ?? `${g.depth!.kind}${g.depth!.floor}`;
 
 /** Distribui os objetos pelas salas, sempre encostados na parede de cima, longe das escadas e dos baús. */
 export function propsFor(g: Game): DepthProp[] {
