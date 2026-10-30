@@ -31,6 +31,7 @@ import { PetsPanel } from "@/components/PetsPanel";
 import { drawKIcon, kImage } from "@/odyssey/kaetram";
 import { PawPrint } from "lucide-react";
 import { skipTutorial, startTutorial } from "@/odyssey/depthplay";
+import { skipBossCard } from "@/odyssey/live-scenes";
 
 export const Route = createFileRoute("/odyssey")({
   head: () => ({
@@ -211,12 +212,14 @@ export function OdysseyScreen() {
   const onMouse = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!g || !g.started) return;
     e.preventDefault();
+    if (g.live || g.bossCard) { skipBossCard(g); return; }
     const r = e.currentTarget.getBoundingClientRect();
     g.click(((e.clientX - r.left) / r.width) * g.viewWidth, ((e.clientY - r.top) / r.height) * g.viewHeight, e.button === 2);
   };
 
   const p = g?.p;
   const stats = g?.stats();
+  const liveOn = Boolean(g && (g.live || g.bossCard));
 
   return (
     <main className="game-shell min-h-screen bg-background text-foreground select-none">
@@ -413,7 +416,7 @@ export function OdysseyScreen() {
             <span className="scene-label"><span className="world-status"/> ÁRVORE DE MANA · POTOS</span>
           </div>
         )}
-        {g && !title && (panel === 'farm' || panel === 'build' || panel === 'workshop') && <Modal title={panel === 'farm' ? 'Jardim & colheita' : panel === 'build' ? 'Construir um lar' : 'Oficinas de Potos'} onClose={()=>setPanel(null)}>
+        {g && !title && !liveOn && (panel === 'farm' || panel === 'build' || panel === 'workshop') && <Modal title={panel === 'farm' ? 'Jardim & colheita' : panel === 'build' ? 'Construir um lar' : 'Oficinas de Potos'} onClose={()=>setPanel(null)}>
           {panel === 'farm' ? <><div className="choice-grid">{(Object.entries(CROPS) as [CropKind,typeof CROPS.carrot][]).map(([id,crop])=><Button variant="outline" key={id} className="choice-item" onClick={()=>{g.crop=id;g.tool='seed';setPanel(null);}}><Sprout/><span>{crop.name}<small>{g.count(crop.seed)} sementes · {crop.seconds}s</small></span></Button>)}</div><div className="flex gap-2 mt-4"><Button variant="secondary" onClick={()=>{g.tool='till';setPanel(null);}}><Shovel/>Preparar terra</Button><Button variant="secondary" onClick={()=>{g.tool='water';setPanel(null);}}><Droplets/>Regar</Button></div><div className="progress-line mt-5">{g.settlement.plots.length} canteiros · {g.settlement.harvests} colheitas</div></> : panel === 'build' ? <div className="choice-grid">{(Object.entries(STRUCTURES) as [StructureKind,typeof STRUCTURES.home][]).map(([id,def])=><Button variant="outline" className="choice-item" key={id} onClick={()=>{g.structure=id;g.tool='build';setPanel(null);}}><House/><span>{def.name}<small>{Object.entries(def.cost).map(([key,n])=>`${ITEMS[key].name} ${g.count(key)}/${n}`).join(' · ')}</small></span></Button>)}</div> : <div className="choice-grid"><Button variant="outline" className="choice-item" onClick={()=>{g.openStation='carpenter';setPanel(null);}}><Hammer/><span>Carpintaria<small>Tábuas e materiais</small></span></Button><Button variant="outline" className="choice-item" onClick={()=>{g.openStation='smith';setPanel(null);}}><Anvil/><span>Forja<small>Lingotes, armas e armaduras</small></span></Button><Button variant="outline" className="choice-item" onClick={()=>{g.openStation='alchemist';setPanel(null);}}><Sparkles/><span>Alquimia<small>Poções e amuletos</small></span></Button><Button variant="outline" className="choice-item" onClick={()=>{g.openStation='shop';setPanel(null);}}><Backpack/><span>Mercado<small>Sementes e suprimentos</small></span></Button></div>}
         </Modal>}
       </div>
@@ -462,7 +465,7 @@ export function OdysseyScreen() {
         <span className="footer-chapter">{title ? 'SUA HISTÓRIA. SEU MUNDO.' : g?.tool === 'explore' ? `${g?.settlement.structures.length} CONSTRUÇÕES · ${g?.settlement.harvests} COLHEITAS` : ({mine:'MINERAÇÃO',axe:'LENHADOR',till:'PREPARAR TERRA',seed:'PLANTAÇÃO',water:'IRRIGAÇÃO',build:'CONSTRUÇÃO',furnish:'DECORAÇÃO',unfurnish:'REMOVER MÓVEL'} as Record<string,string>)[g?.tool ?? '']}</span>
         <div className="system-dock flex gap-1"><Button variant="ghost" size="icon" aria-label={fullscreen?'Sair da tela cheia':'Tela cheia'} title="Tela cheia" onClick={async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{g?.toast('A tela cheia não está disponível neste navegador.');}}}><GameIcon name="fullscreen"/></Button><Button variant="ghost" size="icon" disabled={title} title="Salvar jornada" aria-label="Salvar jornada" onClick={()=>{g?.save();g?.toast('Jornada salva.');}}><GameIcon name="save"/></Button><Button variant="ghost" size="icon" title="Alternar áudio" aria-label="Alternar áudio" onClick={()=>g?.audio.toggleMute()}><GameIcon name={g?.audio.muted?"mute":"sound"}/></Button></div>
       </footer>
-      {!title && <div className="mobile-controls"><Joystick keys={g?.keys} /><Button variant="secondary" size="icon" aria-label="Atacar" onClick={()=>g?.attack()}><GameIcon name="explore"/></Button><Button variant="secondary" size="icon" aria-label="Interagir" onClick={()=>g?.interact()}><Sparkles/></Button><Button variant="secondary" size="icon" aria-label="Magia" onClick={()=>g&&g.cast(g.p.spell)}><GameIcon name="ether"/></Button><Button variant="secondary" size="icon" aria-label="Grimório" onClick={()=>setPanel(panel==='grimoire'?null:'grimoire')}><BookOpen/></Button></div>}
+      {!title && !liveOn && <div className="mobile-controls"><Joystick keys={g?.keys} /><Button variant="secondary" size="icon" aria-label="Atacar" onClick={()=>g?.attack()}><GameIcon name="explore"/></Button><Button variant="secondary" size="icon" aria-label="Interagir" onClick={()=>g?.interact()}><Sparkles/></Button><Button variant="secondary" size="icon" aria-label="Magia" onClick={()=>g&&g.cast(g.p.spell)}><GameIcon name="ether"/></Button><Button variant="secondary" size="icon" aria-label="Grimório" onClick={()=>setPanel(panel==='grimoire'?null:'grimoire')}><BookOpen/></Button></div>}
       {title && <a className="game-credits" href="/game-credits.txt" target="_blank" rel="noreferrer">Créditos · Source of Mana</a>}
       </div>
     </main>
