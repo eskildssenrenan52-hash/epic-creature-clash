@@ -160,6 +160,7 @@ export function OdysseyScreen() {
     const down = (e: KeyboardEvent) => {
       if (!g.started) return;
       g.audio.init();
+      if (g.live || g.bossCard) { if (g.bossCard && (e.code === "Enter" || e.code === "Space" || e.code === "Escape")) { e.preventDefault(); skipBossCard(g); } return; }
       if (g.cutscene) {
         if (e.code === "Enter" || e.code === "Space" || e.code === "KeyE") { e.preventDefault(); g.advanceCutscene(); }
         else if (e.code === "Escape") g.advanceCutscene(true);
@@ -224,7 +225,7 @@ export function OdysseyScreen() {
       <div className="relative w-full aspect-video game-viewport overflow-hidden">
         <canvas ref={canvasRef} aria-label="Mundo de Mana" onMouseMove={(e)=>{if(!g)return;const r=e.currentTarget.getBoundingClientRect();g.cursor={x:Math.floor(((e.clientX-r.left)/r.width*g.viewWidth+g.cam.x)/16),y:Math.floor(((e.clientY-r.top)/r.height*g.viewHeight+g.cam.y)/16)};}} onMouseDown={onMouse} onContextMenu={(e) => e.preventDefault()} className="w-full h-full block" style={{ imageRendering: "pixelated" }} />
 
-        {g && p && stats && !title && (
+        {g && p && stats && !title && !liveOn && (
           <>
             {/* HUD */}
             <div className="hud-plate absolute top-2 left-2 game-panel p-2 space-y-1 text-[12px]">
@@ -382,7 +383,7 @@ export function OdysseyScreen() {
           <div className="stat-tiles"><div className="stat-tile">{g.discoveries.size}/{BUILDINGS.length}<small>Lugares visitados</small></div><div className="stat-tile">{g.openedChests.size}/{TREASURES.length+BUILDINGS.length}<small>Tesouros encontrados</small></div></div>
           <Section title="Lugares"><div className="row-list">{BUILDINGS.map(b=><div key={b.id} className="place-row"><span className={g.discoveries.has(b.id)?'text-accent':'text-muted-foreground'}>{g.discoveries.has(b.id)?b.name:b.secret?'??? — Lugar esquecido':b.name}</span><span>{g.discoveries.has(b.id)?'◆':'◇'}</span></div>)}</div></Section>
         </Modal>}
-        {g && !title && g.cutscene && (
+        {g && !title && !liveOn && g.cutscene && (
           <div className="cutscene absolute inset-0" onClick={() => g.advanceCutscene()} role="dialog" aria-label={g.cutscene.beat.title}>
             <div className="cutscene-bar cutscene-top"><span>{g.cutscene.beat.title}</span></div>
             <CinemaStage key={g.cutscene.beat.id} scene={stageFor(g.cutscene.beat.id, g.cutscene.beat.stage)} line={g.cutscene.i} />
@@ -392,7 +393,7 @@ export function OdysseyScreen() {
               <span className="flex gap-2"><Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); g.advanceCutscene(true); }}>Pular</Button><Button size="sm" onClick={(e) => { e.stopPropagation(); g.advanceCutscene(); }}>{g.cutscene.i + 1 < g.cutscene.beat.lines.length ? "Continuar" : "Fechar"}<ChevronRight size={14}/></Button></span></div>
           </div>
         )}
-        {g && !title && tutorialMode !== "none" && <TutorialOverlay key={tutorialMode} mode={tutorialMode} g={g}
+        {g && !title && !liveOn && tutorialMode !== "none" && <TutorialOverlay key={tutorialMode} mode={tutorialMode} g={g}
           onSkip={() => {
             if (tutorialMode === "dungeon") { skipTutorial(g); setTutorialMode("modals"); }
             else { g.tutorialModalPending = false; g.tutorialModalDone = true; g.save(); setTutorialMode("none"); setPanel("quest"); }

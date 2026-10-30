@@ -212,6 +212,7 @@ export function islandOnKill(g: Game, e: Enemy) {
   // A primeira ilha libertada traz a Deusa Lyria para abençoar o herói (uma vez só).
   startGoddess(g, { id: "first_island", name: "Lyria, a Deusa", color: "#ffd870", lines: [`Você libertou ${r.def.name}. Minhas correntes se partiram com ela.`, "Aceite minha bênção, herói da flecha dourada.", "Eu estarei olhando por você, lá de cima."] });
   const beat = islandBlessingBeat(r.def);
+  if (g.live) { g.seenBeats.add(beat.id); return; } // a Deusa ao vivo substitui a cena comum
   if (!g.seenBeats.has(beat.id)) { g.beatQueue.push(beat); if (!g.cutscene) g.nextBeat(); }
 }
 
