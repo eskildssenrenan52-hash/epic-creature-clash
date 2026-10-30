@@ -7,8 +7,8 @@ import { drawChar, drawEnemy } from "./gfx";
 import type { EnemyKind } from "./data";
 
 type Sub = { a: number; b: number; who?: string; text: string };
-export interface LiveScene { kind: "goddess"; id: string; name: string; color: string; t: number; dur: number; subs: Sub[]; ox: number; oy: number; feathers: { x: number; y: number; vx: number; vy: number; r: number; s: number }[]; blessed: boolean; onDone?: () => void }
-export interface BossCard { id: string; name: string; epithet: string; kind: EnemyKind; tint: string; scale: number; color: string; t: number; dur: number; style: number; seed: number; shards: { x: number; y: number; vx: number; vy: number; a: number; va: number; s: number }[]; after?: () => void }
+export interface LiveScene { kind: "goddess"; id: string; name: string; color: string; t: number; dur: number; subs: Sub[]; ox: number; oy: number; feathers: { x: number; y: number; vx: number; vy: number; r: number; s: number }[]; blessed: boolean; onDone?: (() => void) | undefined }
+export interface BossCard { id: string; name: string; epithet: string; kind: EnemyKind; tint: string; scale: number; color: string; t: number; dur: number; style: number; seed: number; shards: { x: number; y: number; vx: number; vy: number; a: number; va: number; s: number }[]; after?: (() => void) | undefined }
 
 const seedOf = (s: string) => { let n = 2166136261; for (const ch of s) n = Math.imul(n ^ ch.charCodeAt(0), 16777619) >>> 0; return n; };
 const ease = (x: number) => x <= 0 ? 0 : x >= 1 ? 1 : 1 - Math.pow(1 - x, 3);
