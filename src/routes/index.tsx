@@ -1,15 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import type { User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
-import "@lovable.dev/cloud-auth-js/styles.css";
 import loadingArt from "@/assets/intro/loading.jpg";
 import biomesArt from "@/assets/intro/biomes.jpg";
 import { IntroCutscene } from "@/components/IntroCutscene";
 
-const AUTH_CONFIGURED = Boolean(import.meta.env['VITE_SUPABASE_URL'] && import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY']);
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -153,95 +147,10 @@ function Intro() {
 }
 
 function MainMenu() {
-  const [user, setUser] = useState<User | null>(null);
-  const [name, setName] = useState("");
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    if (!AUTH_CONFIGURED) return;
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null));
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
-    return () => data.subscription.unsubscribe();
-  }, []);
-  useEffect(() => {
-    if (!user) { setName(""); return; }
-    (supabase as any).from("profiles").select("username").eq("id", user.id).maybeSingle().then(({ data }: any) => setName(data?.username ?? ""));
-  }, [user]);
-
   return (
     <div className="title-menu">
-      <div className="menu-greet">{!AUTH_CONFIGURED ? "Modo local — progresso salvo neste navegador" : user ? <>Bem-vindo, <b>{name || "aventureiro"}</b></> : "Entre para criar seu perfil de jogador"}</div>
+      <div className="menu-greet">Modo offline — progresso salvo neste aparelho</div>
       <Link to="/odyssey" className="menu-btn primary">▶ Golden Arrow Odyssey</Link>
-      {AUTH_CONFIGURED && <button className="menu-btn" onClick={() => setOpen(true)}>{user ? "Minha conta" : "Entrar / Criar conta"}</button>}
-      {open && AUTH_CONFIGURED && <AccountPanel user={user} name={name} onName={setName} onClose={() => setOpen(false)} />}
     </div>
-  );
-}
-
-function AccountPanel({ user, name, onName, onClose }: { user: User | null; name: string; onName: (n: string) => void; onClose: () => void }) {
-  const [mode, setMode] = useState<"in" | "up">("in");
-  const [email, setEmail] = useState("");
-  const [pass, setPass] = useState("");
-  const [username, setUsername] = useState(name);
-  const [msg, setMsg] = useState("");
-  const [busy, setBusy] = useState(false);
-  useEffect(() => setUsername(name), [name]);
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault(); setBusy(true); setMsg("");
-    if (mode === "up") {
-      const { data, error } = await supabase.auth.signUp({ email, password: pass, options: { emailRedirectTo: window.location.origin, data: { username: username.trim() } } });
-      if (error) setMsg(error.message);
-      else if (!data.session) setMsg("Conta criada! Confira seu e-mail para confirmar o cadastro.");
-    } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
-      if (error) setMsg("E-mail ou senha incorretos.");
-    }
-    setBusy(false);
-  };
-  const oauth = async (p: "google" | "lovable") => {
-    const r = await lovable.auth.signInWithOAuth(p, { redirect_uri: window.location.origin });
-    if (r.error) setMsg("Não foi possível entrar agora.");
-  };
-  const saveName = async () => {
-    if (!user) return;
-    const n = username.trim().slice(0, 24);
-    if (!n) return;
-    const { error } = await (supabase as any).from("profiles").update({ username: n, updated_at: new Date().toISOString() }).eq("id", user.id);
-    if (error) setMsg("Não foi possível salvar."); else { onName(n); setMsg("Nome salvo!"); }
-  };
-
-  return createPortal(
-    <div className="account-backdrop" onClick={onClose}>
-      <div className="account-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Conta">
-        <button className="account-close" onClick={onClose} aria-label="Fechar">✕</button>
-        {user ? (
-          <>
-            <h2>Perfil do jogador</h2>
-            <p className="account-mail">{user.email}</p>
-            <label>Nome de jogador<input value={username} maxLength={24} onChange={(e) => setUsername(e.target.value)} /></label>
-            <button className="menu-btn primary" onClick={saveName}>Salvar nome</button>
-            <button className="menu-btn" onClick={() => supabase.auth.signOut()}>Sair da conta</button>
-          </>
-        ) : (
-          <>
-            <h2>{mode === "in" ? "Entrar" : "Criar conta"}</h2>
-            <form onSubmit={submit}>
-              {mode === "up" && <label>Nome de jogador<input required maxLength={24} value={username} onChange={(e) => setUsername(e.target.value)} /></label>}
-              <label>E-mail<input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></label>
-              <label>Senha<input type="password" required minLength={6} value={pass} onChange={(e) => setPass(e.target.value)} /></label>
-              <button className="menu-btn primary" disabled={busy}>{mode === "in" ? "Entrar" : "Criar conta"}</button>
-            </form>
-            <div className="account-or">ou</div>
-            <button className="menu-btn" onClick={() => oauth("google")}>Continuar com Google</button>
-            <button type="button" className="lovable-auth-button" onClick={() => oauth("lovable")}>Continue with Lovable</button>
-            <button className="account-switch" onClick={() => { setMode(mode === "in" ? "up" : "in"); setMsg(""); }}>
-              {mode === "in" ? "Não tem conta? Criar agora" : "Já tem conta? Entrar"}
-            </button>
-          </>
-        )}
-        {msg && <p className="account-msg">{msg}</p>}
-      </div>
-    </div>,
-    document.body,
   );
 }
