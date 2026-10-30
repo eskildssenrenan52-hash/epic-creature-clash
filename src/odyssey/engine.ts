@@ -1,4 +1,4 @@
-import { liveTick, liveDrawWorld, liveDrawScreen, type LiveScene, type BossCard } from "./live-scenes";
+import { liveTick, liveDrawWorld, liveDrawScreen, startBossCard, type LiveScene, type BossCard } from "./live-scenes";
 import { epicOnKill, epicOnBiome, epicSave, epicLoad, shopPriceMult } from "./epic-play";
 import { castSkill, skillTick, freshBuffs, knows, damageTakenMult, damageDealtMult, speedMult, luckMult, type Buffs } from "./skill-play";
 import { SKILL_BY_ID, SPIRIT_IDS } from "./skills";
@@ -505,7 +505,12 @@ export class Game {
     this.audio.boss = true;
     this.audio.sfx("boss");
     this.toast(`⚔ ${e.boss.def.name} desperta!`, "#ff6060");
-    this.fireBeats(`boss:intro:${e.boss.def.id}`);
+    const def = e.boss.def, look = BOSS_LOOK[def.id] ?? { kind: e.kind, tint: def.color, scale: 2.5 };
+    const card = `bosscard:${def.id}`;
+    if (!this.discoveries.has(card)) {
+      this.discoveries.add(card);
+      startBossCard(this, { id: def.id, name: def.name, kind: look.kind, tint: look.tint, scale: look.scale, color: def.color, after: () => this.fireBeats(`boss:intro:${def.id}`) });
+    } else this.fireBeats(`boss:intro:${def.id}`);
     this.shake = 8;
   }
 

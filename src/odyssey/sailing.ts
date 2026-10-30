@@ -1,3 +1,4 @@
+import { startGoddess } from "./live-scenes";
 /**
  * Velejar e visitar ilhas — ligação do Arquipélago com o motor (browser).
  * Progresso salvo só em `discoveries` (`boat:<id>`, `isle:<id>:...`): campos aditivos, saves antigos seguem válidos.
@@ -208,6 +209,8 @@ export function islandOnKill(g: Game, e: Enemy) {
   g.addItem(b.drop, b.dropQty); g.shake = 8;
   g.biomeBanner = { name: `${b.name} derrotado!`, t: 4 }; g.toast(b.lore, "#f4dc91");
   complete(g, r.def, 1);
+  // A primeira ilha libertada traz a Deusa Lyria para abençoar o herói (uma vez só).
+  startGoddess(g, { id: "first_island", name: "Lyria, a Deusa", color: "#ffd870", lines: [`Você libertou ${r.def.name}. Minhas correntes se partiram com ela.`, "Aceite minha bênção, herói da flecha dourada.", "Eu estarei olhando por você, lá de cima."] });
   const beat = islandBlessingBeat(r.def);
   if (!g.seenBeats.has(beat.id)) { g.beatQueue.push(beat); if (!g.cutscene) g.nextBeat(); }
 }
