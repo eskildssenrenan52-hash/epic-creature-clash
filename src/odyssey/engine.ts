@@ -1447,7 +1447,7 @@ export class Game {
     c.setTransform(1, 0, 0, 1, 0, 0);
     if (!this.interior && !this.depth && !this.island) { this.renderWaypoint(c); this.renderMinimap(); }
     liveDrawScreen(this, c);
-    this.renderInteractionPrompt(c);
+    if (!this.live && !this.bossCard) this.renderInteractionPrompt(c);
     if(this.transition>0){c.fillStyle=`rgba(13,24,25,${Math.min(1,this.transition*1.5)})`;c.fillRect(0,0,this.viewWidth,this.viewHeight);}
     if (p.dead > 0) { c.fillStyle = `rgba(0,0,0,${Math.min(0.8, (2.5 - p.dead))})`; c.fillRect(0, 0, this.viewWidth, this.viewHeight); }
   }

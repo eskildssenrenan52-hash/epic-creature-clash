@@ -223,7 +223,7 @@ export function OdysseyScreen() {
 
   return (
     <main className="game-shell min-h-screen bg-background text-foreground select-none">
-      <div className={`game-layout ${title ? "at-title" : "playing"}`}>
+      <div className={`game-layout ${title ? "at-title" : "playing"}${liveOn ? " live-scene" : ""}`}>
         <div className="game-location"><span className="flex items-center gap-2"><Compass size={15} className="text-primary"/>{title ? 'Vila de Potos' : g?.areaName}<ChevronRight size={12}/><span className="text-muted-foreground">{title ? 'O início de tudo' : 'Terras de Mana'}</span></span><span className="flex items-center gap-2 text-muted-foreground"><Sun size={15}/>{title ? 'Primavera · Dia 1' : `${g?.timeLabel()} · ${g?.raining ? 'Chuva' : 'Céu aberto'}`}</span></div>
       <div className="relative w-full aspect-video game-viewport overflow-hidden">
         <canvas ref={canvasRef} aria-label="Mundo de Mana" onMouseMove={(e)=>{if(!g)return;const r=e.currentTarget.getBoundingClientRect();g.cursor={x:Math.floor(((e.clientX-r.left)/r.width*g.viewWidth+g.cam.x)/16),y:Math.floor(((e.clientY-r.top)/r.height*g.viewHeight+g.cam.y)/16)};}} onMouseDown={onMouse} onContextMenu={(e) => e.preventDefault()} className="w-full h-full block" style={{ imageRendering: "pixelated" }} />
