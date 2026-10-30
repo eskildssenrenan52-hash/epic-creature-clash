@@ -958,7 +958,7 @@ export class Game {
   }
 
   update(dt: number) {
-    if (this.started && !this.paused && liveTick(this, dt)) { this.updateFx(dt); return; }
+    if (this.started && !this.paused && liveTick(this, dt)) { this.transition = Math.max(0, this.transition - dt); this.updateFx(dt); return; }
     if (!this.started || this.paused || this.dialog || this.openStation || this.cutscene) { this.updateFx(dt * 0.0); return; }
     this.lastDelta = dt;
     this.actionCooldown = Math.max(0,this.actionCooldown-dt);
